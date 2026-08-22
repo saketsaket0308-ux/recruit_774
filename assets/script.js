@@ -1,7 +1,7 @@
 // Crikle hiring site — production application behaviour
 // Browser → Google Apps Script Web App → Google Sheet + email
 
-const APPLICATION_ENDPOINT = 'https://script.google.com/macros/s/AKfycbzMT_UJK0yW7JAIRgH38Wd65ezsX0iCWMcHpllXL_t_VBgAyE6hiYCjngWfnsMdCP14/exec';
+const APPLICATION_ENDPOINT = 'https://script.google.com/macros/s/AKfycbwxhYyvxm8468c2fsKgmxqJW6qHpMmS-gTucUBfz_tQHnNGqSVydNe6oouNjv2oG6Q1/exec';
 const DRAFT_KEY = 'crikle_application_draft_v2';
 const VERIFY_COOLDOWN_MS = 30000;
 
