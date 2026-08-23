@@ -184,7 +184,7 @@ function doPost(e) {
     // A verification token is required. This prevents fake addresses from
     // being accepted just because they have a valid-looking format.
     if (clean_(data.email_verified).toLowerCase() !== 'true' ||
-        !verifyEmailToken_(email, clean_(data.email_verification_token), false)) {
+      !verifyEmailToken_(email, clean_(data.email_verification_token), false)) {
       return jsonResponse_({
         ok: false,
         error: 'Email address has not been verified'
@@ -296,7 +296,7 @@ function sendApplicantConfirmation_(data, now) {
   const subject = 'Crikle Internship Application Received ✓';
 
   const body =
-`Hi ${name},
+    `Hi ${name},
 
 Thanks for applying to join Crikle as a ${role}.
 
@@ -308,10 +308,10 @@ What happens next:
 • Please keep an eye on your email and LinkedIn.
 
 Application received: ${Utilities.formatDate(
-  now,
-  Session.getScriptTimeZone(),
-  'dd MMM yyyy, hh:mm a'
-)}
+      now,
+      Session.getScriptTimeZone(),
+      'dd MMM yyyy, hh:mm a'
+    )}
 
 Thanks,
 Team Crikle`;
@@ -337,7 +337,7 @@ function sendFounderNotification_(data, now) {
     `New Crikle applicant — ${clean_(data.full_name)} — ${clean_(data.role)}`;
 
   const body =
-`NEW CRIKLE INTERNSHIP APPLICATION
+    `NEW CRIKLE INTERNSHIP APPLICATION
 
 Applicant: ${clean_(data.full_name)}
 Email: ${clean_(data.email)}
@@ -375,10 +375,10 @@ Hours: ${clean_(data.hours)}
 Duration: ${clean_(data.duration)}
 
 Received: ${Utilities.formatDate(
-  now,
-  Session.getScriptTimeZone(),
-  'dd MMM yyyy, hh:mm a'
-)}
+      now,
+      Session.getScriptTimeZone(),
+      'dd MMM yyyy, hh:mm a'
+    )}
 
 Open the Applications sheet to review the full record.`;
 
@@ -437,14 +437,13 @@ function handleSendVerification_(data) {
 
   const subject = 'Verify your email for Crikle';
   const body =
-`Hi,
+    `Hi,
 
 Someone is applying for the Crikle founding intern team using this email address.
 
 Click this link to verify that you own this inbox:
 
-${WEB_APP_URL}?email_verified=1&email=${encodeURIComponent(email)}&verification_token=${encodeURIComponent(token)}
-
+${siteUrl}/apply.html?email_verification=1&email=${encodeURIComponent(email)}&verification_token=${encodeURIComponent(token)}
 This verification link expires in 15 minutes.
 
 If you did not request this, you can ignore this email.
@@ -538,22 +537,32 @@ function consumeEmailVerificationToken_(email, token) {
 function doGet(e) {
   const params = (e && e.parameter) ? e.parameter : {};
 
-  // Verification request from the Apply page.
-  // GET is intentionally supported because browsers cannot read normal
-  // Google Apps Script responses cross-origin without CORS headers.
-  if (String(params.action || '').toLowerCase() === 'send_verification') {
-    try {
-      console.log('GET send_verification received for: ' + String(params.email || ''));
-      return handleSendVerification_(params);
-    } catch (err) {
-      console.error('GET verification request failed: ' + err);
-      return jsonResponse_({ ok: false, error: String(err) });
+  if (String(params.action || '').toLowerCase() === 'verify_email') {
+    const email = clean_(params.email).toLowerCase();
+    const token = clean_(params.verification_token);
+
+    if (!isValidEmail_(email) || !token) {
+      return jsonResponse_({
+        ok: false,
+        email_verified: false,
+        error: 'Invalid verification request'
+      });
     }
+
+    const valid = verifyEmailToken_(email, token, false);
+
+    return jsonResponse_({
+      ok: valid,
+      email_verified: valid,
+      error: valid ? '' : 'Verification link is invalid or expired'
+    });
   }
 
+  // existing send_verification code...
+
   if (params.email_verified === '1' &&
-      params.email &&
-      params.verification_token) {
+    params.email &&
+    params.verification_token) {
     const email = clean_(params.email).toLowerCase();
     const token = clean_(params.verification_token);
 
@@ -573,12 +582,19 @@ function doGet(e) {
             '&verification_token=' +
             encodeURIComponent(token);
 
-          return HtmlService.createHtmlOutput(
-            '<script>window.top.location.href=' +
-            JSON.stringify(redirectUrl) +
-            ';</script>' +
-            '<p>Email verified. Returning to the application…</p>'
-          );
+          return HtmlService.createHtmlOutput(`
+  <html>
+    <head>
+      <base target="_top">
+    </head>
+    <body>
+      <p>Email verified. Returning to the application…</p>
+      <script>
+        window.open(${JSON.stringify(redirectUrl)}, '_top');
+      </script>
+    </body>
+  </html>
+`);
         }
       } catch (err) {
         console.error('Verification redirect failed: ' + err);
