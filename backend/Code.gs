@@ -443,7 +443,7 @@ Someone is applying for the Crikle founding intern team using this email address
 
 Click this link to verify that you own this inbox:
 
-${siteUrl}/apply.html?email_verification=1&email=${encodeURIComponent(email)}&verification_token=${encodeURIComponent(token)}
+${siteUrl}/apply.html?email_verified=1&email=${encodeURIComponent(email)}&verification_token=${encodeURIComponent(token)}
 This verification link expires in 15 minutes.
 
 If you did not request this, you can ignore this email.
